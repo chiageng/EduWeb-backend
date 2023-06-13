@@ -1,12 +1,11 @@
 import User from "../models/user";
 import { hashPassword, comparePassword } from "../utils/auth";
+import jwt from 'jsonwebtoken'
 
 export const register = async (req, res) => {
   try {
     // console.log(req.body)
     const { email, password } = req.body;
-
-    console.log(req.body)
 
     // validation
     if (!password || password.length < 6) {
@@ -35,3 +34,55 @@ export const register = async (req, res) => {
     return res.status(400).send("Error. Try Again");
   }
 };
+
+
+const generateAccessToken = (user) => {
+  return jwt.sign({id: user.id, isStaff: user.is_staff, isSuperuser: user.is_superuser}, process.env.JWT_SECRET, { expiresIn: '1d'});
+}
+
+const generateRefreshToken = (user) => {
+  return jwt.sign({id: user.id, isAdmin: user.isAdmin}, 'myRefreshSecretKey', { expiresIn: '1d'})
+}
+
+export const login = async (req, res) => {
+  try {
+    // console.log(req.body);
+    const { email, password } = req.body;
+    // check if our db has user with that email
+    const user = await User.findOne({ email }).exec();
+    if (!user) return res.status(400).send("No User Input");
+
+    const match = await comparePassword(password, user.password);
+
+    if (!match) return res.status(400).send("Wrong password");
+
+    // create signed jwt
+    const token = generateAccessToken(user);
+
+    // return user and token to frontend. exclude hashed password
+    user.password = undefined;
+
+    // send token in cookie 
+    res.cookie("token", token, {
+      httpOnly: true,
+      // secure: true // only works on https
+    });
+
+    // send user as json response 
+    res.json({
+      user: user,
+      accessToken: token
+    });
+  } catch (err) {
+    return res.status(400).send("Something wrong when login");
+  }
+};
+
+export const logout = async (req, res) => {
+  try {
+    res.clearCookie("token");
+    return res.json({message: "Sign out success"})
+  } catch (err) {
+    return res.status(400).send("Something wrong when logout")
+  }
+}
