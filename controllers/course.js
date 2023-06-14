@@ -39,11 +39,9 @@ export const uplaodImage = async (req, res) => {
         console.log(err);
         return res.sendStatus(400);
       }
-      console.log(data);
       res.send(data);
     })
   } catch(err) {
-    console.log(err);
   }
   
 };
@@ -66,5 +64,13 @@ export const removeImage = async (req, res) => {
     })
   } catch (error) {
     console.log(error);
+  }
+}
+
+export const create = async (req, res) => {
+  try{
+    res.json({success: true})
+  } catch (err) {
+
   }
 }

@@ -35,7 +35,7 @@ export const register = async (req, res) => {
 
 
 const generateAccessToken = (user) => {
-  return jwt.sign({id: user.id, isStaff: user.is_staff, isSuperuser: user.is_superuser}, process.env.JWT_SECRET, { expiresIn: '1m'});
+  return jwt.sign({id: user.id, isStaff: user.is_staff, isSuperuser: user.is_superuser}, process.env.JWT_SECRET, { expiresIn: '15s'});
 }
 
 const generateRefreshToken = (user) => {
