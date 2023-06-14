@@ -27,22 +27,21 @@ export const register = async (req, res) => {
 
     await user.save();
 
-    console.log("saved user", user);
     return res.json({ user: user });
   } catch (err) {
-    console.log(err);
     return res.status(400).send("Error. Try Again");
   }
 };
 
 
 const generateAccessToken = (user) => {
-  return jwt.sign({id: user.id, isStaff: user.is_staff, isSuperuser: user.is_superuser}, process.env.JWT_SECRET, { expiresIn: '1d'});
+  return jwt.sign({id: user.id, isStaff: user.is_staff, isSuperuser: user.is_superuser}, process.env.JWT_SECRET, { expiresIn: '1m'});
 }
 
 const generateRefreshToken = (user) => {
   return jwt.sign({id: user.id, isAdmin: user.isAdmin}, 'myRefreshSecretKey', { expiresIn: '1d'})
 }
+
 
 export const login = async (req, res) => {
   try {
@@ -70,8 +69,7 @@ export const login = async (req, res) => {
 
     // send user as json response 
     res.json({
-      user: user,
-      accessToken: token
+      user
     });
   } catch (err) {
     return res.status(400).send("Something wrong when login");
@@ -85,4 +83,14 @@ export const logout = async (req, res) => {
   } catch (err) {
     return res.status(400).send("Something wrong when logout")
   }
+}
+
+export const myprofile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    return res.json({user: user});
+  } catch (err) {
+    return res.status(400).send("Something wrong when fetch profile");
+  }
+  
 }
