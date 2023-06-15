@@ -1,5 +1,7 @@
 import AWS from 'aws-sdk'
 import { nanoid } from "nanoid"
+import Course from '../models/course'
+import slugify from 'slugify'
 
 const awsConfig = {
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -69,8 +71,40 @@ export const removeImage = async (req, res) => {
 
 export const create = async (req, res) => {
   try{
-    res.json({success: true})
-  } catch (err) {
+    const alreadyExist = await Course.findOne({
+      slug: slugify(req.body.title.toLowerCase())
+    })
+    
+    if (alreadyExist) return res.status(400).send("Title is taken");
+    
+    const course = await new Course({
+      slug: slugify(req.body.title),
+      instructor: req.user.id,
+      title: req.body.title,
+      price: req.body.price,
+      image: req.body.image,
+    }).save()
 
+    res.json(course);
+  } catch (err) {
+    return res.status(400).send("Course create failed. Try again!")
+  }
+}
+
+export const viewInstructorCourses = async(req, res) => {
+  try {
+    const courses = await Course.find({ instructor: req.user.id}).sort({createdAt: -1}).exec();
+    res.json(courses);
+  } catch (err) {
+    res.status(400).send("Something went wrong")
+  }
+}
+
+export const viewCourse = async(req, res) => {
+  try {
+    const course = await Course.findOne({slug: req.params.slug}).exec();
+    res.json(course);
+  } catch (error) {
+    res.status(400).send("Something went wrong");
   }
 }
