@@ -18,8 +18,11 @@ export const isInstructor = async (req, res, next) => {
 export const verify = (req, res, next) => {
   // const authHeader = req.headers.authorization;
   const authHeader = req.headers.cookie
+  
   if (authHeader) {
-    const token = authHeader.split("=")[1];
+    const token = authHeader.split("token=")[1];
+
+    // console.log(token)
 
     jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
       if (err) {

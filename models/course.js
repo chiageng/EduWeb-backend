@@ -10,19 +10,17 @@ const lessonSchema = new mongoose.Schema(
       minlength: 3,
       maxlength: 320,
       required: true,
+      uniqued: true,
     },
     slug: {
       type: String,
       lowercase: true,
     },
-    content: {
-      type: {},
-      minlength: 50,
+    video: {
+
     },
-    video_link: {},
-    free_preview: {
-      type: Boolean,
-      default: false,
+    image: {
+
     },
   },
   { timestamps: true }
@@ -35,6 +33,7 @@ const courseSchema = new mongoose.Schema({
     minlength: 3,
     maxlength: 320,
     required: true,
+    uniqued: true,
   },
   slug: {
     type: String,
@@ -48,7 +47,9 @@ const courseSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  image: {},
+  image: {
+
+  },
   category: String,
   published: {
     type: Boolean,
@@ -63,3 +64,4 @@ const courseSchema = new mongoose.Schema({
 }, {timestamps: true })
 
 export default mongoose.model("Course", courseSchema);
+export const Lesson =  mongoose.model("Lesson", lessonSchema)
