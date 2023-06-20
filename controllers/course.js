@@ -1,6 +1,6 @@
 import AWS from "aws-sdk";
 import { nanoid } from "nanoid";
-import Course, { Lesson } from "../models/course";
+import { Course, Lesson } from '../models/course';
 import slugify from "slugify";
 import { readFile, readFileSync } from "fs";
 
@@ -100,7 +100,9 @@ export const viewInstructorCourses = async (req, res) => {
 export const viewCourse = async (req, res) => {
   try {
     const course = await Course.findOne({ slug: req.params.slug }).exec();
-    res.json(course);
+    const lessons = await Lesson.find({course}).exec();
+
+    res.json({course, lessons});
   } catch (error) {
     res.status(400).send("Something went wrong");
   }
@@ -175,6 +177,10 @@ export const createTopic = async (req, res) => {
     }).save();
 
     const course = await Course.findOne({ slug: slug }).exec();
+
+    lesson.course = course;
+    lesson.save()
+
     course.lessons.push(lesson)
     course.save() 
     console.log(course.lessons)
@@ -192,3 +198,28 @@ export const createTopic = async (req, res) => {
     return res.status(400).send("Add Topic Failed");
   }
 };
+
+
+export const editCourse = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const course = await Course.findOne({slug}).exec();
+
+    if (course.instructor.toString() !== req.user.id) {
+      return res.status(400).send("Unauthorized")
+    }
+
+    const { title, price, image } = req.body;
+    course.title = title;
+    course.price = price;
+    course.image = image;
+
+    course.save()
+    res.json(course);
+
+  } catch (err) {
+    res.status(400).send("Edit failed")
+  }
+
+}

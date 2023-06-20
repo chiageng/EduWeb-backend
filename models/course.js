@@ -22,6 +22,10 @@ const lessonSchema = new mongoose.Schema(
     image: {
 
     },
+    course: {
+      type: ObjectId,
+      ref: 'Course'
+    }
   },
   { timestamps: true }
 );
@@ -60,8 +64,11 @@ const courseSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  lessons: [lessonSchema],
+  lessons: [{
+    type: ObjectId,
+    ref: "Lesson"
+  }],
 }, {timestamps: true })
 
-export default mongoose.model("Course", courseSchema);
-export const Lesson =  mongoose.model("Lesson", lessonSchema)
+export const Course = mongoose.model("Course", courseSchema);
+export const Lesson = mongoose.model("Lesson", lessonSchema)
