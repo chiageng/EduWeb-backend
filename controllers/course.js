@@ -247,3 +247,84 @@ export const deleteTopic = async (req, res) => {
     res.status(400).send("Delete failed")
   }
 }
+
+export const viewTopic = async (req, res) => {
+  try {
+    const { slug, lessonId } = req.params;
+
+    const course = await Course.findOne( { slug } ).exec();
+    if (req.user.id !== course.instructor.toString()) {
+      return res.status(400).send("Unaothorized")
+    }
+
+    const lesson = await Lesson.findById(lessonId).exec();
+    
+    res.json( lesson )
+
+  } catch (err) {
+    res.status(400).send("View failed")
+  }
+}
+
+export const editTopic = async (req, res) => {
+  try {
+    const { slug, lessonId } = req.params;
+    const { title, video, image } = req.body;
+
+    const course = await Course.findOne({ slug: slug }).exec();
+    
+    if (req.user.id !== course.instructor.toString()) {
+      return res.status(400).send("Unaothorized")
+    }
+    
+    const lesson = await Lesson.findById(lessonId);
+
+    lesson.title = title;
+    lesson.image = image;
+    lesson.video = video;
+    lesson.save()
+
+    // const updated = await Course.findOneAndUpdate(
+    //   { slug },
+    //   {
+    //     $push: { lessons: { title, video, image, slug: slugify(title) } },
+    //   },
+    //   { new: true }
+    // ).exec();
+    res.json({ sucesss: true });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).send("Add Topic Failed");
+  }
+};
+
+export const publishCourse = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const course = await Course.findOne({slug}).exec();
+
+    course.published = true;
+    course.save()
+
+    res.json({success: true})
+  } catch (err) {
+    console.log("Somehting wrong")
+    res.status(400).send("Publish Fail")
+  }
+}
+
+export const unpublishCourse = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const course = await Course.findOne({slug}).exec();
+
+    course.published = false;
+    course.save()
+
+    res.json({success: true})
+  } catch (err) {
+    res.status(400).send("Unpublish Fail")
+  }
+}
