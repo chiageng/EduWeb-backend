@@ -183,7 +183,6 @@ export const createTopic = async (req, res) => {
 
     course.lessons.push(lesson)
     course.save() 
-    console.log(course.lessons)
 
     // const updated = await Course.findOneAndUpdate(
     //   { slug },
@@ -192,7 +191,7 @@ export const createTopic = async (req, res) => {
     //   },
     //   { new: true }
     // ).exec();
-    res.json(course);
+    res.json({ sucesss: true });
   } catch (err) {
     console.log(err);
     return res.status(400).send("Add Topic Failed");
@@ -222,4 +221,29 @@ export const editCourse = async (req, res) => {
     res.status(400).send("Edit failed")
   }
 
+}
+
+export const deleteTopic = async (req, res) => {
+  try {
+    const { slug, lessonId } = req.params;
+    console.log(lessonId)
+    const course = await Course.findOne( { slug } ).exec();
+    if (req.user.id !== course.instructor.toString()) {
+      return res.status(400).send("Unaothorized")
+    }
+
+    let lessons = course.lessons
+
+    lessons = lessons.filter(lesson => lesson.toString() !== lessonId);
+
+    course.lessons = lessons
+    course.save()
+
+    const deletedLesson = await Lesson.findByIdAndDelete(lessonId)
+    
+    res.json({ success: true})
+
+  } catch (err) {
+    res.status(400).send("Delete failed")
+  }
 }
