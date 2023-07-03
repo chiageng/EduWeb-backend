@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 
 const { Schema } = mongoose;
 
+const { ObjectId } = mongoose.Schema
+
 const userSchema = new Schema(
   {
     first_name: {
@@ -40,6 +42,9 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    courses: [
+      {type: ObjectId, ref: "UserCourse"}
+    ],
   },
   { timestamps: true }
 );

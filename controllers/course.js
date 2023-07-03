@@ -1,6 +1,7 @@
 import AWS from "aws-sdk";
 import { nanoid } from "nanoid";
-import { Course, Lesson } from '../models/course';
+import { Course, Lesson, UserCourse } from "../models/course";
+import User from "../models/user";
 import slugify from "slugify";
 import { readFile, readFileSync } from "fs";
 
@@ -78,7 +79,11 @@ export const create = async (req, res) => {
       title: req.body.title,
       price: req.body.price,
       image: req.body.image,
+      instructor_name: req.user.name,
     }).save();
+    console.log(req.user)
+
+    console.log(req.user.name);
 
     res.json(course);
   } catch (err) {
@@ -97,12 +102,13 @@ export const viewInstructorCourses = async (req, res) => {
   }
 };
 
+
 export const viewCourse = async (req, res) => {
   try {
     const course = await Course.findOne({ slug: req.params.slug }).exec();
-    const lessons = await Lesson.find({course}).exec();
+    const lessons = await Lesson.find({ course }).exec();
 
-    res.json({course, lessons});
+    res.json({ course, lessons });
   } catch (error) {
     res.status(400).send("Something went wrong");
   }
@@ -179,10 +185,10 @@ export const createTopic = async (req, res) => {
     const course = await Course.findOne({ slug: slug }).exec();
 
     lesson.course = course;
-    lesson.save()
+    lesson.save();
 
-    course.lessons.push(lesson)
-    course.save() 
+    course.lessons.push(lesson);
+    course.save();
 
     // const updated = await Course.findOneAndUpdate(
     //   { slug },
@@ -198,15 +204,14 @@ export const createTopic = async (req, res) => {
   }
 };
 
-
 export const editCourse = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const course = await Course.findOne({slug}).exec();
+    const course = await Course.findOne({ slug }).exec();
 
     if (course.instructor.toString() !== req.user.id) {
-      return res.status(400).send("Unauthorized")
+      return res.status(400).send("Unauthorized");
     }
 
     const { title, price, image } = req.body;
@@ -214,57 +219,53 @@ export const editCourse = async (req, res) => {
     course.price = price;
     course.image = image;
 
-    course.save()
+    course.save();
     res.json(course);
-
   } catch (err) {
-    res.status(400).send("Edit failed")
+    res.status(400).send("Edit failed");
   }
-
-}
+};
 
 export const deleteTopic = async (req, res) => {
   try {
     const { slug, lessonId } = req.params;
-    console.log(lessonId)
-    const course = await Course.findOne( { slug } ).exec();
+    console.log(lessonId);
+    const course = await Course.findOne({ slug }).exec();
     if (req.user.id !== course.instructor.toString()) {
-      return res.status(400).send("Unaothorized")
+      return res.status(400).send("Unaothorized");
     }
 
-    let lessons = course.lessons
+    let lessons = course.lessons;
 
-    lessons = lessons.filter(lesson => lesson.toString() !== lessonId);
+    lessons = lessons.filter((lesson) => lesson.toString() !== lessonId);
 
-    course.lessons = lessons
-    course.save()
+    course.lessons = lessons;
+    course.save();
 
-    const deletedLesson = await Lesson.findByIdAndDelete(lessonId)
-    
-    res.json({ success: true})
+    const deletedLesson = await Lesson.findByIdAndDelete(lessonId);
 
+    res.json({ success: true });
   } catch (err) {
-    res.status(400).send("Delete failed")
+    res.status(400).send("Delete failed");
   }
-}
+};
 
 export const viewTopic = async (req, res) => {
   try {
     const { slug, lessonId } = req.params;
 
-    const course = await Course.findOne( { slug } ).exec();
+    const course = await Course.findOne({ slug }).exec();
     if (req.user.id !== course.instructor.toString()) {
-      return res.status(400).send("Unaothorized")
+      return res.status(400).send("Unaothorized");
     }
 
     const lesson = await Lesson.findById(lessonId).exec();
-    
-    res.json( lesson )
 
+    res.json(lesson);
   } catch (err) {
-    res.status(400).send("View failed")
+    res.status(400).send("View failed");
   }
-}
+};
 
 export const editTopic = async (req, res) => {
   try {
@@ -272,17 +273,17 @@ export const editTopic = async (req, res) => {
     const { title, video, image } = req.body;
 
     const course = await Course.findOne({ slug: slug }).exec();
-    
+
     if (req.user.id !== course.instructor.toString()) {
-      return res.status(400).send("Unaothorized")
+      return res.status(400).send("Unaothorized");
     }
-    
+
     const lesson = await Lesson.findById(lessonId);
 
     lesson.title = title;
     lesson.image = image;
     lesson.video = video;
-    lesson.save()
+    lesson.save();
 
     // const updated = await Course.findOneAndUpdate(
     //   { slug },
@@ -302,29 +303,102 @@ export const publishCourse = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const course = await Course.findOne({slug}).exec();
+    const course = await Course.findOne({ slug }).exec();
+
+    if (req.user.id !== course.instructor.toString()) {
+      return res.status(400).send("Unaothorized");
+    }
 
     course.published = true;
-    course.save()
+    course.save();
 
-    res.json({success: true})
+    res.json({ success: true });
   } catch (err) {
-    console.log("Somehting wrong")
-    res.status(400).send("Publish Fail")
+    res.status(400).send("Publish Fail");
   }
-}
+};
 
 export const unpublishCourse = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const course = await Course.findOne({slug}).exec();
+    const course = await Course.findOne({ slug }).exec();
+
+    if (req.user.id !== course.instructor.toString()) {
+      return res.status(400).send("Unaothorized")
+    }
 
     course.published = false;
-    course.save()
+    course.save();
 
-    res.json({success: true})
+    res.json({ success: true });
   } catch (err) {
-    res.status(400).send("Unpublish Fail")
+    res.status(400).send("Unpublish Fail");
+  }
+};
+
+export const courses = async (req, res) => {
+  try {
+    const courses = await Course.find({ published: true }).exec();
+    res.json(courses)
+  } catch (err) {
+    res.status(400).send("Courses View Fail")
   }
 }
+
+export const checkEnroll = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const user = await User.findById(req.user.id).exec();
+    const course = await Course.findOne({ slug }).exec();
+
+    const ids = [];
+    const length = user.courses && user.courses.length;
+
+    for (let i = 0; i < length; i++) {
+      let userCourse = await UserCourse.findById(user.courses[i].toString()).exec()
+      ids.push(userCourse.course.toString());
+    }
+
+    res.json(ids.includes(course.id))
+    
+  } catch (error) {
+    res.status(400).send("Something went wrong");
+  }
+};
+
+export const courseEnroll = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const user = await User.findById(req.user.id).exec();
+    const course = await Course.findOne({ slug }).exec();
+
+    // if already enroll, reject the enrollment
+    const ids = [];
+    const length = user.courses && user.courses.length;
+
+    for (let i = 0; i < length; i++) {
+      let userCourse = await UserCourse.findById(user.courses[i].toString()).exec()
+      ids.push(userCourse.course.toString());
+    }
+
+    if (ids.includes(course.id)) {
+      return res.status(400).send("Already Enrolled")
+    }
+
+    const userCourse = await new UserCourse({
+      course: course.id,
+    }).save();
+
+    user.courses.push(userCourse.id);
+    user.save()
+
+
+    res.json({success: true})
+    
+  } catch (error) {
+    res.status(400).send("Something went wrong");
+  }
+};

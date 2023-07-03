@@ -16,8 +16,11 @@ import {
   editTopic,
   publishCourse,
   unpublishCourse,
+  courses,
+  checkEnroll,
+  courseEnroll,
 } from "../controllers/course";
-import { isInstructor, verify } from "../middlewares";
+import { isInstructor, verify, isEnrolled, isOwner } from "../middlewares";
 
 const router = express.Router();
 
@@ -25,17 +28,28 @@ const router = express.Router();
 router.put("/course/:slug/publish", verify, publishCourse)
 router.put("/course/:slug/unpublish", verify, unpublishCourse)
 
-// course
-router.get("/course", verify, viewInstructorCourses);
-router.get("/course/:slug", verify, viewCourse);
-router.post("/course/createcourse", verify, isInstructor, create);
-router.post("/course/:slug/createtopic", verify, createTopic);
-router.put("/course/:slug/editcourse", verify, editCourse);
-router.put("/course/:slug/:lessonId", verify, deleteTopic);
-router.get("/course/:slug/:lessonId/view", verify, viewTopic);
-router.post("/course/:slug/:lessonId/edit", verify, editTopic);
+// course (price page)
+router.get("/courses", courses)
 
 
+// instructor actions
+router.get("/instructor/courses", verify, viewInstructorCourses);
+router.get("/course/:slug", verify, isOwner, viewCourse);
+router.post("/course/createcourse", verify, isInstructor, isOwner, create);
+router.post("/course/:slug/createtopic", verify, isOwner, createTopic);
+router.put("/course/:slug/editcourse", verify, isOwner, editCourse);
+router.put("/course/:slug/:lessonId", verify, isOwner, deleteTopic);
+router.get("/course/:slug/:lessonId/view", verify, isOwner, viewTopic);
+router.post("/course/:slug/:lessonId/edit", verify, isOwner, editTopic);
+
+//user actions
+// router.get("/user/courses", verify, viewCourses);
+router.get("/course/cart/:slug", verify, viewCourse);
+router.get("/course/cart/:slug/check", verify, checkEnroll);
+router.post("/course/cart/:slug/enroll", verify, courseEnroll);
+
+
+// image & video routes
 router.post("/course/upload-image", uplaodImage);
 router.post("/course/remove-image", removeImage);
 router.post(
@@ -46,5 +60,7 @@ router.post(
   uploadVideo
 );
 router.post("/course/remove-video", verify, isInstructor, removeVideo);
+
+
 
 module.exports = router;
