@@ -102,15 +102,24 @@ export const viewInstructorCourses = async (req, res) => {
   }
 };
 
-
-
-
 export const viewCourse = async (req, res) => {
   try {
     const course = await Course.findOne({ slug: req.params.slug }).exec();
     const lessons = await Lesson.find({ course }).exec();
 
     res.json({ course, lessons });
+  } catch (error) {
+    res.status(400).send("Something went wrong");
+  }
+};
+
+export const viewLesson = async (req, res) => {
+  try {
+    const course = await Course.findOne({ slug: req.params.slug }).exec();
+    const lessons = await Lesson.find({ course }).exec();
+    const lesson = lessons.filter(lesson => lesson.slug === req.params.topicSlug)[0];
+
+    res.json({ course, lessons, lesson });
   } catch (error) {
     res.status(400).send("Something went wrong");
   }
