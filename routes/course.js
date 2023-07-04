@@ -19,6 +19,7 @@ import {
   courses,
   checkEnroll,
   courseEnroll,
+  viewUserCourses
 } from "../controllers/course";
 import { isInstructor, verify, isEnrolled, isOwner } from "../middlewares";
 
@@ -47,6 +48,8 @@ router.post("/course/:slug/:lessonId/edit", verify, isOwner, editTopic);
 router.get("/course/cart/:slug", verify, viewCourse);
 router.get("/course/cart/:slug/check", verify, checkEnroll);
 router.post("/course/cart/:slug/enroll", verify, courseEnroll);
+router.get("/user/courses", verify, viewUserCourses)
+router.get("/user/course/:slug", verify, isEnrolled, viewCourse);
 
 
 // image & video routes

@@ -1,5 +1,5 @@
 import User from "../models/user"
-import { Course } from "../models/course";
+import { Course, UserCourse } from "../models/course";
 import jwt from 'jsonwebtoken'
 
 export const isInstructor = async (req, res, next) => {
@@ -64,10 +64,11 @@ export const isEnrolled = async (req, res, next) => {
     const len = user.courses && user.courses.length
 
     for (let i = 0; i < len; i ++) {
-      ids.push(user.courses[i].toString());
+      let userCourse = await UserCourse.findById(user.courses[i].toString()).exec()
+      ids.push(userCourse.course.toString());
     }
 
-    if (!ids.includes(course._id.toString())) {
+    if (!ids.includes(course.id.toString())) {
       res.sendStatus(403);
     } else {
       next();

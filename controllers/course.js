@@ -103,6 +103,8 @@ export const viewInstructorCourses = async (req, res) => {
 };
 
 
+
+
 export const viewCourse = async (req, res) => {
   try {
     const course = await Course.findOne({ slug: req.params.slug }).exec();
@@ -399,6 +401,24 @@ export const courseEnroll = async (req, res) => {
     res.json({success: true})
     
   } catch (error) {
+    res.status(400).send("Something went wrong");
+  }
+};
+
+export const viewUserCourses = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).exec();
+    const courses= [];
+
+    const length = user.courses && user.courses.length;
+    for (let i = 0; i < length; i++) {
+      let userCourse = await UserCourse.findById(user.courses[i].toString()).exec()
+      let course = await Course.findById(userCourse.course.toString())
+      courses.push(course);
+    }
+    
+    res.json(courses);
+  } catch (err) {
     res.status(400).send("Something went wrong");
   }
 };
