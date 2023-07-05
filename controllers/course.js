@@ -81,9 +81,6 @@ export const create = async (req, res) => {
       image: req.body.image,
       instructor_name: req.user.name,
     }).save();
-    console.log(req.user)
-
-    console.log(req.user.name);
 
     res.json(course);
   } catch (err) {
@@ -91,16 +88,7 @@ export const create = async (req, res) => {
   }
 };
 
-export const viewInstructorCourses = async (req, res) => {
-  try {
-    const courses = await Course.find({ instructor: req.user.id })
-      .sort({ createdAt: -1 })
-      .exec();
-    res.json(courses);
-  } catch (err) {
-    res.status(400).send("Something went wrong");
-  }
-};
+
 
 export const viewCourse = async (req, res) => {
   try {
@@ -128,7 +116,7 @@ export const viewLesson = async (req, res) => {
 export const uploadVideo = async (req, res) => {
   try {
     const { video } = req.files;
-    // console.log(video)
+
     if (!video) {
       return res.status(400).send("No Video");
     }
@@ -144,15 +132,12 @@ export const uploadVideo = async (req, res) => {
     // upload to S3
     S3.upload(params, (err, data) => {
       if (err) {
-        console.log(err);
         res.sendStatus(400);
       }
 
-      console.log(data);
       res.send(data);
     });
   } catch (err) {
-    console.log(err);
     return res.status(400).send("Something went wrong");
   }
 };
@@ -210,7 +195,6 @@ export const createTopic = async (req, res) => {
     // ).exec();
     res.json({ sucesss: true });
   } catch (err) {
-    console.log(err);
     return res.status(400).send("Add Topic Failed");
   }
 };
@@ -240,7 +224,6 @@ export const editCourse = async (req, res) => {
 export const deleteTopic = async (req, res) => {
   try {
     const { slug, lessonId } = req.params;
-    console.log(lessonId);
     const course = await Course.findOne({ slug }).exec();
     if (req.user.id !== course.instructor.toString()) {
       return res.status(400).send("Unaothorized");
@@ -305,7 +288,6 @@ export const editTopic = async (req, res) => {
     // ).exec();
     res.json({ sucesss: true });
   } catch (err) {
-    console.log(err);
     return res.status(400).send("Add Topic Failed");
   }
 };
@@ -423,9 +405,21 @@ export const viewUserCourses = async (req, res) => {
     for (let i = 0; i < length; i++) {
       let userCourse = await UserCourse.findById(user.courses[i].toString()).exec()
       let course = await Course.findById(userCourse.course.toString())
-      courses.push(course);
+
+      courses.push({course, progress: userCourse.progress});
     }
     
+    res.json(courses);
+  } catch (err) {
+    res.status(400).send("Something went wrong");
+  }
+};
+
+export const viewInstructorCourses = async (req, res) => {
+  try {
+    let courses = await Course.find({ instructor: req.user.id })
+      .sort({ createdAt: -1 })
+      .exec();
     res.json(courses);
   } catch (err) {
     res.status(400).send("Something went wrong");

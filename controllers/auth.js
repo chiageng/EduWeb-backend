@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken'
 export const register = async (req, res) => {
   try {
     // console.log(req.body)
-    const { email, password } = req.body;
+    const { email, password, name } = req.body;
 
     // validation
     if (!password || password.length < 6) {
@@ -23,6 +23,7 @@ export const register = async (req, res) => {
     const user = new User({
       email,
       password: hashedPassword,
+      name,
     });
 
     await user.save();
@@ -35,7 +36,7 @@ export const register = async (req, res) => {
 
 
 const generateAccessToken = (user) => {
-  return jwt.sign({id: user.id, name: user.first_name, isStaff: user.is_staff, isSuperuser: user.is_superuser}, process.env.JWT_SECRET, { expiresIn: '1d'});
+  return jwt.sign({id: user.id, name: user.name, isStaff: user.is_staff, isSuperuser: user.is_superuser}, process.env.JWT_SECRET, { expiresIn: '1d'});
 }
 
 const generateRefreshToken = (user) => {

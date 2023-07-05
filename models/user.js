@@ -6,11 +6,7 @@ const { ObjectId } = mongoose.Schema
 
 const userSchema = new Schema(
   {
-    first_name: {
-      type: String,
-      trim: true,
-    },
-    last_name: {
+    name: {
       type: String,
       trim: true,
     },

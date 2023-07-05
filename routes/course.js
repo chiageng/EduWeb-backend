@@ -30,28 +30,30 @@ const router = express.Router();
 router.put("/course/:slug/publish", verify, publishCourse)
 router.put("/course/:slug/unpublish", verify, unpublishCourse)
 
-// course (price page)
-router.get("/courses", courses)
+// course (price page both instructor and user)
+router.get("/courses", verify, courses)
+router.get("/course/cart/:slug", verify, viewCourse);
+
+// both instructor and user access
 
 
 // instructor actions
 router.get("/instructor/courses", verify, viewInstructorCourses);
 router.get("/course/:slug", verify, isOwner, viewCourse);
+router.post("/course/createcourse", verify, isInstructor, create);
 router.get("/course/:slug/:topicSlug", verify, isOwner, viewLesson);
-router.post("/course/createcourse", verify, isInstructor, isOwner, create);
-router.post("/course/:slug/createtopic", verify, isOwner, createTopic);
-router.put("/course/:slug/editcourse", verify, isOwner, editCourse);
-router.put("/course/:slug/:lessonId", verify, isOwner, deleteTopic);
+router.post("/course/:slug/createtopic", verify, isInstructor, isOwner, createTopic);
+router.put("/course/:slug/editcourse", verify, isInstructor, isOwner, editCourse);
+router.put("/course/:slug/:lessonId", verify, isInstructor, isOwner, deleteTopic);
 router.get("/course/:slug/:lessonId/view", verify, isOwner, viewTopic);
 router.post("/course/:slug/:lessonId/edit", verify, isOwner, editTopic);
 
 //user actions
-// router.get("/user/courses", verify, viewCourses);
-router.get("/course/cart/:slug", verify, viewCourse);
 router.get("/course/cart/:slug/check", verify, checkEnroll);
 router.post("/course/cart/:slug/enroll", verify, courseEnroll);
 router.get("/user/courses", verify, viewUserCourses)
 router.get("/user/course/:slug", verify, isEnrolled, viewCourse);
+router.get("/user/course/:slug/:topicSlug", verify, isEnrolled, viewLesson);
 
 
 
