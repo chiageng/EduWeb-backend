@@ -1,9 +1,10 @@
 import AWS from "aws-sdk";
 import { nanoid } from "nanoid";
-import { Course, Lesson, UserCourse } from "../models/course";
+import { Choice, Course, Lesson, Quiz, QuizQuestion, UserCourse } from "../models/course";
 import User from "../models/user";
 import slugify from "slugify";
 import { readFile, readFileSync } from "fs";
+import { validateHeaderName } from "http";
 
 const awsConfig = {
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -50,7 +51,6 @@ export const uplaodImage = async (req, res) => {
 export const removeImage = async (req, res) => {
   try {
     const { image } = req.body;
-
     const params = {
       Bucket: image.Bucket,
       Key: image.Key,
@@ -339,82 +339,6 @@ export const courses = async (req, res) => {
   }
 }
 
-export const checkEnroll = async (req, res) => {
-  try {
-    const { slug } = req.params;
-
-    const user = await User.findById(req.user.id).exec();
-    const course = await Course.findOne({ slug }).exec();
-
-    const ids = [];
-    const length = user.courses && user.courses.length;
-
-    for (let i = 0; i < length; i++) {
-      let userCourse = await UserCourse.findById(user.courses[i].toString()).exec()
-      ids.push(userCourse.course.toString());
-    }
-
-    res.json(ids.includes(course.id))
-    
-  } catch (error) {
-    res.status(400).send("Something went wrong");
-  }
-};
-
-export const courseEnroll = async (req, res) => {
-  try {
-    const { slug } = req.params;
-
-    const user = await User.findById(req.user.id).exec();
-    const course = await Course.findOne({ slug }).exec();
-
-    // if already enroll, reject the enrollment
-    const ids = [];
-    const length = user.courses && user.courses.length;
-
-    for (let i = 0; i < length; i++) {
-      let userCourse = await UserCourse.findById(user.courses[i].toString()).exec()
-      ids.push(userCourse.course.toString());
-    }
-
-    if (ids.includes(course.id)) {
-      return res.status(400).send("Already Enrolled")
-    }
-
-    const userCourse = await new UserCourse({
-      course: course.id,
-    }).save();
-
-    user.courses.push(userCourse.id);
-    user.save()
-
-
-    res.json({success: true})
-    
-  } catch (error) {
-    res.status(400).send("Something went wrong");
-  }
-};
-
-export const viewUserCourses = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).exec();
-    const courses= [];
-
-    const length = user.courses && user.courses.length;
-    for (let i = 0; i < length; i++) {
-      let userCourse = await UserCourse.findById(user.courses[i].toString()).exec()
-      let course = await Course.findById(userCourse.course.toString())
-
-      courses.push({course, progress: userCourse.progress});
-    }
-    
-    res.json(courses);
-  } catch (err) {
-    res.status(400).send("Something went wrong");
-  }
-};
-
 export const viewInstructorCourses = async (req, res) => {
   try {
     let courses = await Course.find({ instructor: req.user.id })
@@ -423,5 +347,165 @@ export const viewInstructorCourses = async (req, res) => {
     res.json(courses);
   } catch (err) {
     res.status(400).send("Something went wrong");
+  }
+};
+
+export const createQuiz= async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { title } = req.body;
+
+    const quiz = await new Quiz({
+      title: title,
+      slug: slugify(title),
+    }).save();
+
+    const course = await Course.findOne({ slug: slug }).exec();
+
+    quiz.course = course;
+    quiz.save();
+
+    course.quizzes.push(quiz);
+    course.save();
+
+    res.json({ sucesss: true });
+  } catch (err) {
+    return res.status(400).send("Add Quiz Failed");
+  }
+};
+
+export const viewQuizzes= async (req, res) => {
+  try {
+    const course = await Course.findOne({ slug: req.params.slug }).exec();
+    const quizzes = await Quiz.find({course}).exec();
+
+    res.json({ course, quizzes });
+  } catch (error) {
+    res.status(400).send("Something went wrong");
+  }
+};
+
+
+
+export const viewQuiz= async (req, res) => {
+  try {
+    const course = await Course.findOne({ slug: req.params.slug }).exec();
+    const quiz = await Quiz.findOne({course, slug: req.params.quizSlug});
+    const questions = [];
+
+    for (let i = 0; i < quiz.questions.length; i++) {
+      let currQuestion = await QuizQuestion.findById(quiz.questions[i].toString()).exec();
+    
+      let currChoice = await Choice.find({quizQuestion: currQuestion}).exec();
+
+      questions.push({question: currQuestion, choice: currChoice})
+    }
+
+    res.json({ course, quiz, questions });
+  } catch (error) {
+    res.status(400).send("Something went wrong");
+  }
+};
+
+export const createQuizQuestion= async (req, res) => {
+  try {
+    const { slug, quizSlug } = req.params;
+    const { question, choices, explanation, answer, image } = req.body;
+
+    const course = await Course.findOne({slug}).exec();
+    const quiz = await Quiz.findOne({ course, slug: quizSlug }).exec();
+
+    let quizQuestion = await new QuizQuestion({
+      question,
+      answer, 
+      explanation,
+      quiz,
+      image,
+    }).save();
+
+    const inputChoices = [];
+    for (let i = 0; i < choices.length; i++) {
+      let choice =await new Choice({text: choices[i].text, value: choices[i].value, image: choices[i].image, quizQuestion}).save();
+      inputChoices.push(choice);
+    }
+    
+    quizQuestion.choices = inputChoices;
+    quizQuestion.save();
+
+    quiz.questions.push(quizQuestion);
+
+    quiz.save();
+
+    res.json({ sucesss: true });
+  } catch (err) {
+    return res.status(400).send("Add Quiz Question Failed");
+  }
+};
+
+export const viewQuizQuestion= async (req, res) => {
+  try {
+    const question = await QuizQuestion.findById(req.params.questionId).exec();
+    
+    const choices = await Choice.find({quizQuestion: question}).exec();
+
+    res.json({ question, choices});
+  } catch (error) {
+    res.status(400).send("Something went wrong");
+  }
+};
+
+export const editQuizQuestion = async (req, res) => {
+  try {
+    const quizQuestion = await QuizQuestion.findById(req.params.questionId).exec();
+
+    const { question, choices, explanation, answer, image } = req.body;
+
+    const currChoice = quizQuestion.choices;
+
+    for (let i = 0; i < choices.length; i++) {
+      let choice =await Choice.findById(currChoice[i].toString());
+      choice.text = choices[i].text;
+      choice.value= choices[i].value;
+      choice.image = choices[i].image;
+      choice.save()
+    }
+
+    quizQuestion.question = question;
+    quizQuestion.explanation = explanation;
+    quizQuestion.answer = answer;
+    
+    quizQuestion.image = image;
+
+    quizQuestion.save();
+    res.json({success: true});
+
+  } catch (err) {
+    res.status(400).send("Edit Quiz Question failed");
+  }
+};
+
+export const deleteQuizQuestion = async (req, res) => {
+  try {
+    const { slug, quizSlug, questionId } = req.params;
+    const course = await Course.findOne({ slug }).exec();
+    
+    const quiz = await Quiz.findOne({ course, quizSlug }).exec();
+
+    let questions = quiz.questions.filter(question => question.toString() !== questionId);
+
+    quiz.questions = questions;
+    quiz.save();
+
+    
+    const deletedQuestion = await QuizQuestion.findById(questionId).exec();
+    for (let i = 0; i < deletedQuestion.choices.length; i++) {
+      let deletedChoice = await Choice.findByIdAndDelete(deletedQuestion.choices[i].toString()).exec();
+    }
+
+    deletedQuestion.delete();
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).send("Delete failed");
   }
 };

@@ -41,6 +41,9 @@ const userSchema = new Schema(
     courses: [
       {type: ObjectId, ref: "UserCourse"}
     ],
+    quizzes: [
+      {type: ObjectId, ref: "UserQuiz"}
+    ],
   },
   { timestamps: true }
 );
