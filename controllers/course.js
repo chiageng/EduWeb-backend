@@ -71,7 +71,7 @@ export const create = async (req, res) => {
       slug: slugify(req.body.title.toLowerCase()),
     });
 
-    if (alreadyExist) return res.status(400).send("Title is taken");
+    if (alreadyExist) return res.status(400).send("Course with this title already exist");
 
     const course = await new Course({
       slug: slugify(req.body.title),
@@ -213,6 +213,7 @@ export const editCourse = async (req, res) => {
     course.title = title;
     course.price = price;
     course.image = image;
+    course.slug = slugify(title);
 
     course.save();
     res.json(course);
@@ -277,15 +278,9 @@ export const editTopic = async (req, res) => {
     lesson.title = title;
     lesson.image = image;
     lesson.video = video;
+    lesson.slug = slugify(title);
     lesson.save();
 
-    // const updated = await Course.findOneAndUpdate(
-    //   { slug },
-    //   {
-    //     $push: { lessons: { title, video, image, slug: slugify(title) } },
-    //   },
-    //   { new: true }
-    // ).exec();
     res.json({ sucesss: true });
   } catch (err) {
     return res.status(400).send("Add Topic Failed");
@@ -371,6 +366,30 @@ export const createQuiz= async (req, res) => {
     res.json({ sucesss: true });
   } catch (err) {
     return res.status(400).send("Add Quiz Failed");
+  }
+};
+
+export const editQuiz= async (req, res) => {
+  try {
+    const { slug, quizSlug } = req.params;
+    const { title } = req.body;
+
+    const course = await Course.findOne({ slug: req.params.slug }).exec();
+
+    const quiz = await Quiz.findOne({
+      course,
+      slug: quizSlug
+    }).exec();
+
+
+    quiz.title = title;
+    quiz.slug = slugify(title);
+
+    quiz.save();
+    
+    res.json({ sucesss: true });
+  } catch (err) {
+    return res.status(400).send("Edit Quiz Failed");
   }
 };
 
@@ -507,5 +526,37 @@ export const deleteQuizQuestion = async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(400).send("Delete failed");
+  }
+};
+
+export const publishQuiz = async (req, res) => {
+  try {
+    const { slug, quizSlug } = req.params;
+
+    const course = await Course.findOne({ slug }).exec();
+    const quiz = await Quiz.findOne({course, slug: quizSlug})
+
+    quiz.published = true;
+    quiz.save();
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).send("Publish Fail");
+  }
+};
+
+export const unpublishQuiz = async (req, res) => {
+  try {
+    const { slug, quizSlug } = req.params;
+
+    const course = await Course.findOne({ slug }).exec();
+    const quiz = await Quiz.findOne({course, slug: quizSlug})
+
+    quiz.published = false;
+    quiz.save();
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).send("Unpublish Fail");
   }
 };

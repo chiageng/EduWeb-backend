@@ -22,6 +22,36 @@ const userSchema = new Schema(
       min: 6,
       max: 64,
     },
+    school: {
+      type: String,
+    },
+    address1: {
+      type: String,
+    },
+    address2: {
+      type: String,
+    },
+    postal_code: {
+      type: String,
+    },
+    state: {
+      type: String,
+    },
+    country: {
+      type: String,
+    },
+    grade_year: {
+      type: String,
+    },
+    gender: {
+      type: String,
+    },
+    phone_number: {
+      type: String,
+    },
+    exam_title: {
+      type: String,
+    },
     picture: {
       type: String,
       default: "/avatar.png",

@@ -163,6 +163,10 @@ const quizSchema = new mongoose.Schema({
     type: ObjectId,
     ref: 'Course'
   },
+  published: {
+    type: Boolean,
+    default: false,
+  },
 }, {timestamps: true})
 
 const userQuizSchema = new mongoose.Schema({

@@ -82,7 +82,7 @@ export const viewUserCourses = async (req, res) => {
 export const viewUserQuizzes= async (req, res) => {
   try {
     const course = await Course.findOne({ slug: req.params.slug }).exec();
-    const quizzes = await Quiz.find({course}).exec();
+    const quizzes = await Quiz.find({course, published: true}).exec();
     const user = await User.findById(req.user.id).exec();
 
     const output = [];

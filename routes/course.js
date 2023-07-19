@@ -25,6 +25,9 @@ import {
   viewQuizQuestion,
   editQuizQuestion,
   deleteQuizQuestion,
+  publishQuiz,
+  unpublishQuiz,
+  editQuiz,
 } from "../controllers/course";
 import {
   checkEnroll,
@@ -41,6 +44,9 @@ const router = express.Router();
 // publish/unpublished course
 router.put("/course/:slug/publish", verify, publishCourse);
 router.put("/course/:slug/unpublish", verify, unpublishCourse);
+router.put("/course/:slug/quiz/:quizSlug/publish", verify, publishQuiz);
+router.put("/course/:slug/quiz/:quizSlug/unpublish", verify, unpublishQuiz);
+
 
 // course (price page both instructor and user)
 router.get("/courses", verify, courses);
@@ -90,6 +96,13 @@ router.post(
   isInstructor,
   isOwner,
   createQuizQuestion
+);
+router.put(
+  "/course/:slug/quiz/:quizSlug/edit",
+  verify,
+  isInstructor,
+  isOwner,
+  editQuiz
 );
 router.get(
   "/course/:slug/quiz/:quizSlug/view/:questionId",
