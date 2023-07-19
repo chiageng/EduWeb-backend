@@ -11,9 +11,10 @@ const app = express();
 
 // db
 mongoose
-	  .connect(process.env.DATABASE, {})
+	  .connect(process.env.CLOUD_DATABASE, {})
 	  .then(() => console.log("DB connected"))
 	  .catch((err) => console.log("DB Error => ", err));
+
 
 // apply middleware (in between response sent will run middleware function)
 app.use(cors());
