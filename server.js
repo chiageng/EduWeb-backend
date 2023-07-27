@@ -23,7 +23,7 @@ app.use(morgan("dev"));
 
 // accept origin from localhost3000
 app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000", "https://netlify-test--lucent-praline-9bca10.netlify.app"); // update to match the domain you will make the request from
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
