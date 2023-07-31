@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 const morgan = require("morgan");
 require("dotenv").config();
+const path = require("path")
 
 import fs from 'fs';
 const mongoose = require("mongoose");
@@ -33,9 +34,25 @@ fs.readdirSync("./routes").map((r) =>
 	  app.use("/api", require(`./routes/${r}`))
 	);
 
-app.get("/", (req, res) => {
-  res.send("you hit server endpoint");
+const _dirname = path.dirname("")
+const buildPath = path.join(_dirname, "/build");
+
+app.use(express.static(buildPath))
+
+app.get("/*", (req, res) => {
+  res.sendFile(
+		path.join(__dirname, "/build/index.html"),
+		function(err) {
+			if (err) {
+				res.status(500).send(err);
+			}
+		}
+	)
 });
+
+// app.get("/", (req, res) => {
+// 	res.send("you hit the server point")
+// })
 
 // port
 const port = 8000;
