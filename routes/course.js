@@ -28,6 +28,7 @@ import {
   publishQuiz,
   unpublishQuiz,
   editQuiz,
+  createComment,
 } from "../controllers/course";
 import {
   checkEnroll,
@@ -53,6 +54,8 @@ router.get("/courses", verify, courses);
 router.get("/course/cart/:slug", verify, viewCourse);
 
 // both instructor and user access
+router.post("/course/:slug/createComment/:topicId", verify, isOwner, createComment);
+router.post("/course/:slug/createComment/:topicId", verify, isEnrolled, createComment);
 
 // instructor actions
 router.get("/course/:slug/quizzes", verify, isInstructor, isOwner, viewQuizzes);
@@ -60,6 +63,7 @@ router.get("/instructor/courses", verify, viewInstructorCourses);
 router.get("/course/:slug", verify, isOwner, viewCourse);
 router.post("/course/createcourse", verify, isInstructor, create);
 router.get("/course/:slug/:topicSlug", verify, isOwner, viewLesson);
+
 router.post(
   "/course/:slug/createtopic",
   verify,

@@ -1,6 +1,6 @@
 import AWS from "aws-sdk";
 import { nanoid } from "nanoid";
-import { Choice, Course, Lesson, Quiz, QuizQuestion, UserCourse } from "../models/course";
+import { Choice, Course, Forum, Lesson, Quiz, QuizQuestion, UserCourse, Comment } from "../models/course";
 import User from "../models/user";
 import slugify from "slugify";
 import { readFile, readFileSync } from "fs";
@@ -107,7 +107,17 @@ export const viewLesson = async (req, res) => {
     const lessons = await Lesson.find({ course }).exec();
     const lesson = lessons.filter(lesson => lesson.slug === req.params.topicSlug)[0];
 
-    res.json({ course, lessons, lesson });
+    const forum = await Forum.findById(lesson.forum.toString()).exec();
+    const comments = [];
+
+    for (let i = 0; i < forum.comments.length; i++) {
+      let comment = await Comment.findById(forum.comments[i].toString()).exec();
+      let user = await User.findById(comment.user.toString()).exec();
+
+      comments.push({comment: comment, user: user});
+    }
+
+    res.json({ course, lessons, lesson, comments });
   } catch (error) {
     res.status(400).send("Something went wrong");
   }
@@ -181,9 +191,17 @@ export const createTopic = async (req, res) => {
     const course = await Course.findOne({ slug: slug }).exec();
 
     lesson.course = course;
-    lesson.save();
-
+    
     course.lessons.push(lesson);
+
+    const forum = await new Forum({
+      lesson,
+    }).save();
+
+    lesson.forum = forum;
+
+
+    lesson.save();
     course.save();
 
     // const updated = await Course.findOneAndUpdate(
@@ -560,3 +578,27 @@ export const unpublishQuiz = async (req, res) => {
     res.status(400).send("Unpublish Fail");
   }
 };
+
+export const createComment = async (req, res) => {
+  try {
+    const { slug, topicId } = req.params;
+    const { comment } = req.body;
+
+    const lesson = await Lesson.findById(topicId).exec();
+    
+    const forum = await Forum.findById(lesson.forum.toString()).exec();
+    
+    const newComment = await new Comment({
+      comment: comment,
+      forum,
+      user: req.user.id
+    }).save();
+    
+    forum.comments.push(newComment);
+    forum.save();
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).send(err)
+  }
+}
