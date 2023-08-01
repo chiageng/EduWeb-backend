@@ -221,6 +221,8 @@ const commentSchema = new mongoose.Schema(
     },
     comment: {
       type: String,
+      required: true,
+      minlength: 1,
     },
     upvote: {
       type: Number,

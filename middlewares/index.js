@@ -78,3 +78,28 @@ export const isEnrolled = async (req, res, next) => {
     res.status(400).json("You are not authenticated to access")
   }
 }
+
+export const isEnrolledOrOwner = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).exec();
+    const course = await Course.findOne({ slug: req.params.slug}).exec();
+
+    // check if course id is found in user course array 
+    let ids = [];
+    const len = user.courses && user.courses.length
+
+    for (let i = 0; i < len; i ++) {
+      let userCourse = await UserCourse.findById(user.courses[i].toString()).exec()
+      ids.push(userCourse.course.toString());
+    }
+
+    if (!ids.includes(course.id.toString()) && course.instructor != req.user.id) {
+      res.sendStatus(403);
+    } else {
+      next();
+    }
+
+  } catch (err) {
+    res.status(400).json("You are not authenticated to access")
+  }
+}

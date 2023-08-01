@@ -29,6 +29,7 @@ import {
   unpublishQuiz,
   editQuiz,
   createComment,
+  viewForum,
 } from "../controllers/course";
 import {
   checkEnroll,
@@ -38,7 +39,7 @@ import {
   viewUserQuizzes,
   saveUserQuiz,
 } from "../controllers/userCourse";
-import { isInstructor, verify, isEnrolled, isOwner } from "../middlewares";
+import { isInstructor, verify, isEnrolled, isOwner, isEnrolledOrOwner } from "../middlewares";
 
 const router = express.Router();
 
@@ -54,15 +55,15 @@ router.get("/courses", verify, courses);
 router.get("/course/cart/:slug", verify, viewCourse);
 
 // both instructor and user access
-router.post("/course/:slug/createComment/:topicId", verify, isOwner, createComment);
-router.post("/course/:slug/createComment/:topicId", verify, isEnrolled, createComment);
+router.post("/course/:slug/createComment/:topicId", verify, isEnrolledOrOwner, createComment);
 
 // instructor actions
 router.get("/course/:slug/quizzes", verify, isInstructor, isOwner, viewQuizzes);
 router.get("/instructor/courses", verify, viewInstructorCourses);
 router.get("/course/:slug", verify, isOwner, viewCourse);
 router.post("/course/createcourse", verify, isInstructor, create);
-router.get("/course/:slug/:topicSlug", verify, isOwner, viewLesson);
+router.get("/course/:slug/:topicSlug", verify, isEnrolledOrOwner, viewLesson);
+router.get("/course/:slug/:topicSlug/:forumId", verify, isEnrolledOrOwner, viewForum);
 
 router.post(
   "/course/:slug/createtopic",
@@ -155,7 +156,7 @@ router.put(
   isEnrolled,
   saveUserQuiz
 );
-router.get("/user/course/:slug/:topicSlug", verify, isEnrolled, viewLesson);
+
 
 // image & video routes
 router.post("/course/upload-image", uplaodImage);
