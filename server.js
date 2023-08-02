@@ -11,8 +11,13 @@ const mongoose = require("mongoose");
 const app = express();
 
 // db
+let db = process.env.DATABASE
+if (process.env.NODE_ENV === "production") {
+	db = process.env.CLOUD_DATABASE;
+}
+
 mongoose
-	  .connect(process.env.CLOUD_DATABASE, {})
+	  .connect(db, {})
 	  .then(() => console.log("DB connected"))
 	  .catch((err) => console.log("DB Error => ", err));
 

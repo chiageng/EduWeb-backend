@@ -99,6 +99,10 @@ const userCourseSchema = new mongoose.Schema({
     type: ObjectId,
     ref: "User",
   },
+  enroll: {
+    type: Boolean,
+    default: false,
+  }
 });
 
 const choiceSchema = new mongoose.Schema({

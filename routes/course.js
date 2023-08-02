@@ -38,6 +38,9 @@ import {
   viewUserQuiz,
   viewUserQuizzes,
   saveUserQuiz,
+  checkStudentsEnrollment,
+  approveEnrollment,
+  removeEnrollment,
 } from "../controllers/userCourse";
 import { isInstructor, verify, isEnrolled, isOwner, isEnrolledOrOwner } from "../middlewares";
 
@@ -53,14 +56,18 @@ router.put("/course/:slug/quiz/:quizSlug/unpublish", verify, unpublishQuiz);
 // course (price page both instructor and user)
 router.get("/courses", verify, courses);
 router.get("/course/cart/:slug", verify, viewCourse);
+router.get("/course/:slug/checkEnroll", verify, checkEnroll);
 
 // both instructor and user access
 router.post("/course/:slug/createComment/:topicId", verify, isEnrolledOrOwner, createComment);
 
 // instructor actions
 router.get("/course/:slug/quizzes", verify, isInstructor, isOwner, viewQuizzes);
+router.get("/course/checkStudentsEnrollment/:slug", verify, isInstructor, isOwner, checkStudentsEnrollment);
+router.post("/course/approveEnrollment/:slug", verify, isInstructor, isOwner, approveEnrollment)
+router.post("/course/removeEnrollment/:slug", verify, isInstructor, isOwner, removeEnrollment)
 router.get("/instructor/courses", verify, viewInstructorCourses);
-router.get("/course/:slug", verify, isOwner, viewCourse);
+router.get("/course/:slug", verify, isEnrolledOrOwner, viewCourse);
 router.post("/course/createcourse", verify, isInstructor, create);
 router.get("/course/:slug/:topicSlug", verify, isEnrolledOrOwner, viewLesson);
 router.get("/course/:slug/:topicSlug/:forumId", verify, isEnrolledOrOwner, viewForum);
@@ -139,10 +146,9 @@ router.get(
 );
 
 //user actions
-router.get("/course/cart/:slug/check", verify, checkEnroll);
+
 router.post("/course/cart/:slug/enroll", verify, courseEnroll);
 router.get("/user/courses", verify, viewUserCourses);
-router.get("/user/course/:slug", verify, isEnrolled, viewCourse);
 router.get("/user/course/:slug/quizzes", verify, isEnrolled, viewUserQuizzes);
 router.get(
   "/user/course/:slug/quizzes/:quizSlug",
