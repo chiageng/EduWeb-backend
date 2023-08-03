@@ -6,6 +6,7 @@ import {
   UserCourse,
   UserQuiz,
   QuizQuestion,
+  Review,
 } from "../models/course";
 import User from "../models/user";
 
@@ -90,8 +91,6 @@ export const removeEnrollment = async (req, res) => {
 
     userCourse.enroll = false;
     userCourse.save();
-
-    console.log(userCourse);
 
     res.json({ success: true });
   } catch (err) {
@@ -256,5 +255,57 @@ export const saveUserQuiz = async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     res.status(400).send("Something went wrong");
+  }
+};
+
+export const createReview = async (req, res) => {
+  try {
+    
+    const user = await User.findById(req.user.id).exec();
+    
+    const course = await Course.findOne({ slug: req.params.slug }).exec();
+
+    const userCourse = await UserCourse.findOne({ user, course }).exec();
+
+    const review = await new Review({
+      user, 
+      course, 
+      comment: req.body.comment,
+      rating: req.body.rating,
+    }).save();
+
+    userCourse.reviewed = true;
+    userCourse.save();
+
+    course.reviews.push(review);
+
+    course.accumulate_ratings = course.accumulate_ratings + req.body.rating;
+    course.ratings = course.accumulate_ratings / course.reviews.length;
+
+    course.save();
+
+    res.json({ success: true });
+    
+  } catch (err) {
+    res.status(400).send("Create Review Failed");
+  }
+};
+
+export const viewReviews = async (req, res) => {
+  try {
+    const course = await Course.findOne({ slug: req.params.slug }).exec();
+
+    let output = [];
+
+    for (let i = 0; i < course.reviews.length; i++) {
+      let curr = await Review.findById(course.reviews[i].toString()).exec();
+      let user = await User.findById(curr.user.toString()).exec();
+      output.push({ review: curr, user });
+    }
+
+    res.json(output);
+    
+  } catch (err) {
+    res.status(400).send("View Reviews Failed");
   }
 };

@@ -24,8 +24,8 @@ const lessonSchema = new mongoose.Schema(
     },
     forum: {
       type: ObjectId,
-      ref: "Forum"
-    }
+      ref: "Forum",
+    },
   },
   { timestamps: true }
 );
@@ -82,6 +82,15 @@ const courseSchema = new mongoose.Schema(
         ref: "Quiz",
       },
     ],
+    ratings: {
+      type: Number,
+      default: 0,
+    },
+    accumulate_ratings: {
+      type: Number,
+      default: 0,
+    },
+    reviews: [{ type: ObjectId, ref: "Review" }],
   },
   { timestamps: true }
 );
@@ -100,6 +109,10 @@ const userCourseSchema = new mongoose.Schema({
     ref: "User",
   },
   enroll: {
+    type: Boolean,
+    default: false,
+  },
+  reviewed: {
     type: Boolean,
     default: false,
   }
@@ -240,6 +253,28 @@ const commentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const reviewSchema = new mongoose.Schema(
+  {
+    course: {
+      type: ObjectId,
+      ref: "Course",
+    },
+    user: {
+      type: ObjectId,
+      ref: "User",
+    },
+    comment: {
+      type: String,
+      required: true,
+      minlength: 1,
+    },
+    rating: {
+      type: Number,
+    }
+  },
+  { timestamps: true }
+);
+
 export const Course = mongoose.model("Course", courseSchema);
 export const Lesson = mongoose.model("Lesson", lessonSchema);
 export const UserCourse = mongoose.model("UserCourse", userCourseSchema);
@@ -249,3 +284,4 @@ export const Choice = mongoose.model("Choice", choiceSchema);
 export const UserQuiz = mongoose.model("UserQuiz", userQuizSchema);
 export const Forum = mongoose.model("Forum", forumSchema);
 export const Comment = mongoose.model("Comment", commentSchema);
+export const Review = mongoose.model("Review", reviewSchema);

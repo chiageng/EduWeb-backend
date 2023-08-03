@@ -41,6 +41,8 @@ import {
   checkStudentsEnrollment,
   approveEnrollment,
   removeEnrollment,
+  createReview,
+  viewReviews,
 } from "../controllers/userCourse";
 import { isInstructor, verify, isEnrolled, isOwner, isEnrolledOrOwner } from "../middlewares";
 
@@ -60,6 +62,7 @@ router.get("/course/:slug/checkEnroll", verify, checkEnroll);
 
 // both instructor and user access
 router.post("/course/:slug/createComment/:topicId", verify, isEnrolledOrOwner, createComment);
+router.get("/course/:slug/viewReviews", verify, viewReviews);
 
 // instructor actions
 router.get("/course/:slug/quizzes", verify, isInstructor, isOwner, viewQuizzes);
@@ -148,6 +151,7 @@ router.get(
 //user actions
 
 router.post("/course/cart/:slug/enroll", verify, courseEnroll);
+router.post("/course/:slug/createReview", verify, isEnrolled, createReview);
 router.get("/user/courses", verify, viewUserCourses);
 router.get("/user/course/:slug/quizzes", verify, isEnrolled, viewUserQuizzes);
 router.get(
