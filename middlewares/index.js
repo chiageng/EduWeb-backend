@@ -43,7 +43,7 @@ export const isOwner = async (req, res, next) => {
     const user = await User.findById(req.user.id).exec();
     const course = await Course.findOne({ slug: req.params.slug}).exec();
 
-    if (course.instructor != req.user.id) {
+    if (course.instructor.toString() != req.user.id) {
       res.sendStatus(403);
     } else {
       next();
@@ -93,8 +93,15 @@ export const isEnrolledOrOwner = async (req, res, next) => {
       ids.push(userCourse.course.toString());
     }
 
-    if (!ids.includes(course.id.toString()) && course.instructor != req.user.id) {
-      res.sendStatus(403);
+
+    if (!ids.includes(course.id.toString())) {
+
+      if (course.instructor.toString() !== req.user.id) {
+        res.sendStatus(403);
+      } else {
+
+        next();
+      }
     } else {
       next();
     }

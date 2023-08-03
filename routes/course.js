@@ -98,6 +98,13 @@ router.put(
 );
 router.get("/course/:slug/:lessonId/view", verify, isOwner, viewTopic);
 router.post("/course/:slug/:lessonId/edit", verify, isOwner, editTopic);
+router.get(
+  "/course/:slug/quiz/:quizSlug/view",
+  verify,
+  isInstructor,
+  isOwner,
+  viewQuiz
+);
 router.post(
   "/course/:slug/quiz/create",
   verify,
@@ -140,13 +147,7 @@ router.put(
   isOwner,
   deleteQuizQuestion
 );
-router.get(
-  "/course/:slug/quiz/:quizSlug",
-  verify,
-  isInstructor,
-  isOwner,
-  viewQuiz
-);
+
 
 //user actions
 

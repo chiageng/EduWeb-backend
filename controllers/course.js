@@ -438,7 +438,7 @@ export const viewQuizzes= async (req, res) => {
 
     res.json({ course, quizzes });
   } catch (error) {
-    res.status(400).send("Something went wrong");
+    res.status(400).send("View Quizzes went wrong");
   }
 };
 
@@ -460,7 +460,7 @@ export const viewQuiz= async (req, res) => {
 
     res.json({ course, quiz, questions });
   } catch (error) {
-    res.status(400).send("Something went wrong");
+    res.status(400).send("View Quiz went wrong");
   }
 };
 
