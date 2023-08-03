@@ -11,10 +11,10 @@ const mongoose = require("mongoose");
 const app = express();
 
 // db
-let db = process.env.DATABASE
-if (process.env.NODE_ENV === "production") {
-	db = process.env.CLOUD_DATABASE;
-}
+let db = process.env.CLOUD_DATABASE
+// if (process.env.NODE_ENV === "production") {
+// 	db = process.env.CLOUD_DATABASE;
+// }
 
 mongoose
 	  .connect(db, {})

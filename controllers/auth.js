@@ -30,7 +30,7 @@ export const register = async (req, res) => {
 
     return res.json({ user: user });
   } catch (err) {
-    return res.status(400).send("Error. Try Again");
+    return res.status(400).send(err);
   }
 };
 
