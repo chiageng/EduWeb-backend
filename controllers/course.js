@@ -107,21 +107,21 @@ export const viewLesson = async (req, res) => {
     const lessons = await Lesson.find({ course }).exec();
     const lesson = lessons.filter(lesson => lesson.slug === req.params.topicSlug)[0];
 
-    const forum = await Forum.findById(lesson.forum.toString(
+    // const forum = await Forum.findById(lesson.forum.toString(
 
-    )).exec();
-    const comments = [];
+    // )).exec();
+    // const comments = [];
 
-    for (let i = 0; i < forum.comments.length; i++) {
-      let comment = await Comment.findById(forum.comments[i].toString()).exec();
-      let user = await User.findById(comment.user.toString()).exec();
+    // for (let i = 0; i < forum.comments.length; i++) {
+    //   let comment = await Comment.findById(forum.comments[i].toString()).exec();
+    //   let user = await User.findById(comment.user.toString()).exec();
 
-      comments.push({comment: comment, user: user});
-    }
+    //   comments.push({comment: comment, user: user});
+    // }
 
-    res.json({ course, lessons, lesson, comments });
+    res.json({ course, lessons, lesson });
   } catch (error) {
-    res.status(400).send("Something went wrong");
+    res.status(400).send("View Lesson Went Wrong");
   }
 };
 
@@ -139,7 +139,7 @@ export const viewForum = async (req, res) => {
 
     res.json(comments);
   } catch (error) {
-    res.status(400).send("Something went wrong");
+    res.status(400).send("View Forum went wrong");
   }
 };
 
