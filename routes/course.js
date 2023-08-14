@@ -96,7 +96,7 @@ router.put(
   isOwner,
   deleteTopic
 );
-router.get("/course/:slug/:lessonId/view", verify, isOwner, viewTopic);
+router.get("/course/:slug/view/:lessonId/topic", verify, isOwner, viewTopic);
 router.post("/course/:slug/:lessonId/edit", verify, isOwner, editTopic);
 router.get(
   "/course/:slug/quiz/:quizSlug/view",

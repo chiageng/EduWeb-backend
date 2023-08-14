@@ -296,7 +296,7 @@ export const viewTopic = async (req, res) => {
 
     res.json(lesson);
   } catch (err) {
-    res.status(400).send("View failed");
+    res.status(400).send("View Topic failed");
   }
 };
 
