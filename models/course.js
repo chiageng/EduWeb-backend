@@ -249,6 +249,8 @@ const commentSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    upvoteRecord: [ {type: ObjectId, ref: "User" }],
+    downvoteRecord: [ {type: ObjectId, ref: "User"} ],
   },
   { timestamps: true }
 );

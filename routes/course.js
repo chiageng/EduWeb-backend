@@ -30,6 +30,8 @@ import {
   editQuiz,
   createComment,
   viewForum,
+  upvoteComment,
+  downvoteComment,
 } from "../controllers/course";
 import {
   checkEnroll,
@@ -62,6 +64,8 @@ router.get("/course/:slug/checkEnroll", verify, checkEnroll);
 
 // both instructor and user access
 router.post("/course/:slug/createComment/:topicId", verify, isEnrolledOrOwner, createComment);
+router.post("/course/:slug/:topicSlug/:commentId/upvote", verify, isEnrolledOrOwner, upvoteComment);
+router.post("/course/:slug/:topicSlug/:commentId/downvote", verify, isEnrolledOrOwner, downvoteComment);
 router.get("/course/:slug/viewReviews", verify, viewReviews);
 
 // instructor actions

@@ -107,17 +107,6 @@ export const viewLesson = async (req, res) => {
     const lessons = await Lesson.find({ course }).exec();
     const lesson = lessons.filter(lesson => lesson.slug === req.params.topicSlug)[0];
 
-    // const forum = await Forum.findById(lesson.forum.toString(
-
-    // )).exec();
-    // const comments = [];
-
-    // for (let i = 0; i < forum.comments.length; i++) {
-    //   let comment = await Comment.findById(forum.comments[i].toString()).exec();
-    //   let user = await User.findById(comment.user.toString()).exec();
-
-    //   comments.push({comment: comment, user: user});
-    // }
 
     res.json({ course, lessons, lesson });
   } catch (error) {
@@ -133,8 +122,10 @@ export const viewForum = async (req, res) => {
     for (let i = 0; i < forum.comments.length; i++) {
       let comment = await Comment.findById(forum.comments[i].toString()).exec();
       let user = await User.findById(comment.user.toString()).exec();
+      let upvote = comment.upvoteRecord.includes(req.user.id);
+      let downvote = comment.downvoteRecord.includes(req.user.id)
 
-      comments.push({comment: comment, user: user});
+      comments.push({comment: comment, user: user, upvote, downvote});
     }
 
     res.json(comments);
@@ -374,10 +365,14 @@ export const courses = async (req, res) => {
 
 export const viewInstructorCourses = async (req, res) => {
   try {
-    let courses = await Course.find({ instructor: req.user.id })
-      .sort({ createdAt: -1 })
-      .exec();
-    res.json(courses);
+    let coursesData = await Course.find({ instructor: req.user.id }).exec();
+    let courses = [];
+
+    for (let i = 0; i < coursesData.length; i++) {
+      let course = coursesData[i];
+      courses.push( { course, progress: 0 });
+    }
+    res.json( courses );
   } catch (err) {
     res.status(400).send("Something went wrong");
   }
@@ -434,7 +429,9 @@ export const editQuiz= async (req, res) => {
 export const viewQuizzes= async (req, res) => {
   try {
     const course = await Course.findOne({ slug: req.params.slug }).exec();
-    const quizzes = await Quiz.find({course}).exec();
+    let quizzes = await Quiz.find({course}).exec();
+
+    quizzes = quizzes.map(quiz => { return {quiz, done: false, score: 0}})
 
     res.json({ course, quizzes });
   } catch (error) {
@@ -620,5 +617,49 @@ export const createComment = async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(400).send(err)
+  }
+}
+
+export const upvoteComment = async (req, res) => {
+  try {
+    const { slug, topicSlug, commentId } = req.params;
+
+    const comment = await Comment.findById(commentId);
+
+    if (!comment.upvoteRecord.includes(req.user.id)) {
+      comment.upvote = comment.upvote + 1;
+      comment.upvoteRecord.push(req.user.id);
+      comment.save();
+    } else {
+      comment.upvote = comment.upvote - 1;
+      comment.upvoteRecord = comment.upvoteRecord.filter(id => id.toString() !== req.user.id.toString());
+      comment.save();
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).send(err);
+  }
+}
+
+export const downvoteComment = async (req, res) => {
+  try {
+    const { slug, topicSlug, commentId } = req.params;
+
+    const comment = await Comment.findById(commentId);
+
+    if (!comment.downvoteRecord.includes(req.user.id)) {
+      comment.downvote = comment.downvote + 1;
+      comment.downvoteRecord.push(req.user.id);
+      comment.save();
+    } else {
+      comment.downvote = comment.downvote - 1;
+      comment.downvoteRecord = comment.downvoteRecord.filter(id => id.toString() !== req.user.id.toString());
+      comment.save();
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).send(err);
   }
 }
