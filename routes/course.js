@@ -28,6 +28,7 @@ import {
   publishQuiz,
   unpublishQuiz,
   editQuiz,
+  deleteQuiz,
   createComment,
   viewForum,
   upvoteComment,
@@ -129,6 +130,13 @@ router.put(
   isInstructor,
   isOwner,
   editQuiz
+);
+router.put(
+  "/course/:slug/quiz/:quizSlug/delete",
+  verify,
+  isInstructor,
+  isOwner,
+  deleteQuiz
 );
 router.get(
   "/course/:slug/quiz/:quizSlug/view/:questionId",

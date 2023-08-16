@@ -65,6 +65,20 @@ export const removeImage = async (req, res) => {
   } catch (error) {}
 };
 
+const deleteImage = (image) => {
+  const params = {
+    Bucket: image.Bucket,
+    Key: image.Key,
+  };
+
+  S3.deleteObject(params, (err, data) => {
+    if (err) {
+      // console.log(err);
+    }
+    // console.log("Delete Image")
+  });
+}
+
 export const create = async (req, res) => {
   try {
     const alreadyExist = await Course.findOne({
@@ -426,6 +440,8 @@ export const editQuiz= async (req, res) => {
   }
 };
 
+
+
 export const viewQuizzes= async (req, res) => {
   try {
     const course = await Course.findOne({ slug: req.params.slug }).exec();
@@ -538,12 +554,57 @@ export const editQuizQuestion = async (req, res) => {
   }
 };
 
+export const deleteQuiz= async (req, res) => {
+  try {
+    const { slug, quizSlug } = req.params;
+    const { title } = req.body;
+
+    const course = await Course.findOne({ slug: req.params.slug }).exec();
+
+    const quiz = await Quiz.findOne({
+      course,
+      slug: quizSlug
+    }).exec();
+
+    if (quiz.published) {
+      return res.status(400).send("Published Quiz not able to delete")
+    }
+
+    course.quizzes = course.quizzes.filter(item => item.toString() !== quiz._id.toString())
+    course.save();
+
+    for (let i = 0; i < quiz.questions.length; i++) {
+      let deletedQuestion = await QuizQuestion.findById(quiz.questions[i]._id.toString()).exec();
+      
+      for (let j = 0; j < deletedQuestion.choices.length; j++) {
+        let deletedChoice = await Choice.findById(deletedQuestion.choices[j].toString()).exec();
+        if (deletedChoice.image) {
+          deleteImage(deletedChoice.image);
+        }
+        deletedChoice.delete();
+      }
+
+      if (deletedQuestion.image) {
+        deleteImage(deletedQuestion.image);
+      }
+
+      deletedQuestion.delete();
+    }
+
+    quiz.delete();
+    
+    res.json({ sucesss: true });
+  } catch (err) {
+    return res.status(400).send("Delete Quiz Failed");
+  }
+};
+
 export const deleteQuizQuestion = async (req, res) => {
   try {
     const { slug, quizSlug, questionId } = req.params;
     const course = await Course.findOne({ slug }).exec();
     
-    const quiz = await Quiz.findOne({ course, quizSlug }).exec();
+    const quiz = await Quiz.findOne({ course, slug: quizSlug }).exec();
 
     let questions = quiz.questions.filter(question => question.toString() !== questionId);
 
@@ -553,14 +614,22 @@ export const deleteQuizQuestion = async (req, res) => {
     
     const deletedQuestion = await QuizQuestion.findById(questionId).exec();
     for (let i = 0; i < deletedQuestion.choices.length; i++) {
-      let deletedChoice = await Choice.findByIdAndDelete(deletedQuestion.choices[i].toString()).exec();
+      let deletedChoice = await Choice.findById(deletedQuestion.choices[i].toString()).exec();
+      if (deletedChoice.image) {
+        deleteImage(deletedChoice.image);
+      }
+      deletedChoice.delete();
+    }
+
+    if (deletedQuestion.image) {
+      deleteImage(deletedQuestion.image);
     }
 
     deletedQuestion.delete();
 
     res.json({ success: true });
   } catch (err) {
-    res.status(400).send("Delete failed");
+    res.status(400).send("Delete Quiz Question failed");
   }
 };
 
