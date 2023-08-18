@@ -65,7 +65,7 @@ export const removeImage = async (req, res) => {
   } catch (error) {}
 };
 
-const deleteImage = (image) => {
+export const deleteImage = (image) => {
   const params = {
     Bucket: image.Bucket,
     Key: image.Key,
@@ -78,6 +78,59 @@ const deleteImage = (image) => {
     // console.log("Delete Image")
   });
 }
+
+export const uploadVideo = async (req, res) => {
+  try {
+    const { video } = req.files;
+
+    if (!video) {
+      return res.status(400).send("No Video");
+    }
+
+    const params = {
+      Bucket: "eduweb-videos",
+      Key: `${nanoid()}.${video.type.split("/")[1]}`, // type = video/mp4
+      Body: readFileSync(video.path),
+      ACL: "public-read",
+      ContentType: video.type,
+    };
+
+    // upload to S3
+    S3.upload(params, (err, data) => {
+      if (err) {
+        res.sendStatus(400);
+      }
+
+      res.send(data);
+    });
+  } catch (err) {
+    return res.status(400).send("Upload Video went wrong");
+  }
+};
+
+export const removeVideo = async (req, res) => {
+  try {
+    const { video } = req.body;
+
+    if (!video) {
+      return res.status(400).send("No Video");
+    }
+    const params = {
+      Bucket: video.Bucket,
+      Key: video.Key,
+    };
+
+    // delete from S3
+    S3.deleteObject(params, (err, data) => {
+      if (err) {
+        res.sendStatus(400);
+      }
+      res.send(data);
+    });
+  } catch (err) {
+    return res.status(400).send("Remove video went wrong");
+  }
+};
 
 export const create = async (req, res) => {
   try {
@@ -145,59 +198,6 @@ export const viewForum = async (req, res) => {
     res.json(comments);
   } catch (error) {
     res.status(400).send("View Forum went wrong");
-  }
-};
-
-export const uploadVideo = async (req, res) => {
-  try {
-    const { video } = req.files;
-
-    if (!video) {
-      return res.status(400).send("No Video");
-    }
-
-    const params = {
-      Bucket: "eduweb-bucket",
-      Key: `${nanoid()}.${video.type.split("/")[1]}`, // type = video/mp4
-      Body: readFileSync(video.path),
-      ACL: "public-read",
-      ContentType: video.type,
-    };
-
-    // upload to S3
-    S3.upload(params, (err, data) => {
-      if (err) {
-        res.sendStatus(400);
-      }
-
-      res.send(data);
-    });
-  } catch (err) {
-    return res.status(400).send("Something went wrong");
-  }
-};
-
-export const removeVideo = async (req, res) => {
-  try {
-    const { video } = req.body;
-
-    if (!video) {
-      return res.status(400).send("No Video");
-    }
-    const params = {
-      Bucket: video.Bucket,
-      Key: video.Key,
-    };
-
-    // delete from S3
-    S3.deleteObject(params, (err, data) => {
-      if (err) {
-        res.sendStatus(400);
-      }
-      res.send(data);
-    });
-  } catch (err) {
-    return res.status(400).send("Something went wrong");
   }
 };
 

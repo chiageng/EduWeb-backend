@@ -1,6 +1,7 @@
 import User from "../models/user";
 import { hashPassword, comparePassword } from "../utils/auth";
 import jwt from 'jsonwebtoken'
+import { deleteImage } from "./course";
 
 export const register = async (req, res) => {
   try {
@@ -36,7 +37,7 @@ export const register = async (req, res) => {
 
 
 const generateAccessToken = (user) => {
-  return jwt.sign({id: user.id, name: user.name, isStaff: user.is_staff, isSuperuser: user.is_superuser}, process.env.JWT_SECRET, { expiresIn: '1d'});
+  return jwt.sign({id: user.id, name: user.name, isStaff: user.is_staff, isSuperuser: user.is_superuser }, process.env.JWT_SECRET, { expiresIn: '1d'});
 }
 
 const generateRefreshToken = (user) => {
@@ -90,7 +91,7 @@ export const logout = async (req, res) => {
 export const editProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-    const { name, examTitle, gradeYear, school, gender, phoneNumber, address1, address2, postalCode, state, country } = req.body;
+    const { name, examTitle, gradeYear, school, gender, phoneNumber, address1, address2, postalCode, state, country, image, background } = req.body;
 
     user.name = name;
     user.exam_title = examTitle;
@@ -103,6 +104,17 @@ export const editProfile = async (req, res) => {
     user.postal_code = postalCode;
     user.state = state;
     user.country = country;
+
+    if (user.image) {
+      deleteImage(user.image);
+    }
+
+    if (user.background) {
+      deleteImage(user.background);
+    }
+
+    user.background = background;
+    user.image = image;
 
     user.save();
 
