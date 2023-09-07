@@ -66,6 +66,10 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    is_instructor: {
+      type: Boolean,
+      default: false,
+    },
     is_active: {
       type: Boolean,
       default: true,

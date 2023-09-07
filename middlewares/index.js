@@ -6,7 +6,21 @@ export const isInstructor = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id).exec();
 
-    if (!user.is_staff) {
+    if (!user.is_staff && !user.is_instructor && !user.is_superuser) {
+      return res.sendStatus(403);
+    } else {
+      next();
+    }
+  } catch(err) {
+    console.log(err);
+  }
+}
+
+export const isAdmin = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).exec();
+
+    if (!user.is_staff && !user.is_instructor && !user.is_superuser) {
       return res.sendStatus(403);
     } else {
       next();

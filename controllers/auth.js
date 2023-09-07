@@ -79,6 +79,44 @@ export const login = async (req, res) => {
   }
 };
 
+export const adminLogin = async (req, res) => {
+  try {
+    // console.log(req.body);
+    const { email, password } = req.body;
+    // check if our db has user with that email
+    const user = await User.findOne({ email }).exec();
+    if (!user) return res.status(400).send("No Such User Exist");
+
+    const match = await comparePassword(password, user.password);
+
+    if (!match) return res.status(400).send("Wrong password");
+
+    if (!user.is_instructor && !user.is_staff && !user.is_superuser) {
+      return res.status(400).send("Not admin!")
+    }
+
+    // create signed jwt
+    const token = generateAccessToken(user);
+
+    // return user and token to frontend. exclude hashed password
+    user.password = undefined;
+
+    // send token in cookie 
+    res.cookie("token", token, {
+      httpOnly: true,
+      // secure: true // only works on https
+    });
+
+    // send user as json response 
+    res.json({
+      user
+    });
+  } catch (err) {
+    // return res.status(400).send("Something wrong when login");
+    return res.status(400).send(err);
+  }
+};
+
 export const logout = async (req, res) => {
   try {
     res.clearCookie("token");
