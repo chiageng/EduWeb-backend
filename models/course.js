@@ -45,8 +45,7 @@ const courseSchema = new mongoose.Schema(
       lowercase: true,
     },
     description: {
-      type: {},
-      minlength: 50,
+      type: String,
     },
     price: {
       type: Number,
@@ -55,6 +54,7 @@ const courseSchema = new mongoose.Schema(
     },
     image: {},
     category: String,
+    level: String,
     published: {
       type: Boolean,
       default: false,

@@ -144,7 +144,9 @@ export const create = async (req, res) => {
       slug: slugify(req.body.title),
       instructor: req.user.id,
       title: req.body.title,
-      price: req.body.price,
+      description: req.body.description,
+      level: req.body.level,
+      category: req.body.category,
       image: req.body.image,
       instructor_name: req.user.name,
     }).save();
@@ -252,9 +254,11 @@ export const editCourse = async (req, res) => {
       return res.status(400).send("Unauthorized");
     }
 
-    const { title, price, image } = req.body;
+    const { title, category, description, level, image } = req.body;
     course.title = title;
-    course.price = price;
+    course.category = category;
+    course.description = description;
+    course.level = level;
     course.image = image;
     course.slug = slugify(title);
 
