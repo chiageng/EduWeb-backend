@@ -4,7 +4,6 @@ import formidable from "express-formidable";
 import {
   uplaodImage,
   removeImage,
-  create,
   viewInstructorCourses,
   viewCourse,
   uploadVideo,
@@ -33,6 +32,8 @@ import {
   viewForum,
   upvoteComment,
   downvoteComment,
+  createCourse,
+  deleteCourse,
 } from "../controllers/course";
 import {
   checkEnroll,
@@ -76,7 +77,7 @@ router.post("/course/approveEnrollment/:slug", verify, isInstructor, isOwner, ap
 router.post("/course/removeEnrollment/:slug", verify, isInstructor, isOwner, removeEnrollment)
 router.get("/instructor/courses", verify, viewInstructorCourses);
 router.get("/course/:slug", verify, isEnrolledOrOwner, viewCourse);
-router.post("/course/createcourse", verify, isInstructor, create);
+router.post("/course/createcourse", verify, isInstructor, createCourse);
 router.get("/course/:slug/:topicSlug", verify, isEnrolledOrOwner, viewLesson);
 router.get("/course/:slug/:topicSlug/:forumId", verify, isEnrolledOrOwner, viewForum);
 
@@ -93,6 +94,13 @@ router.put(
   isInstructor,
   isOwner,
   editCourse
+);
+router.put(
+  "/course/:slug",
+  verify,
+  isInstructor,
+  isOwner,
+  deleteCourse
 );
 router.put(
   "/course/:slug/:lessonId",
